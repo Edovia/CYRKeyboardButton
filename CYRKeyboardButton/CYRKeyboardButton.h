@@ -76,6 +76,11 @@ extern NSString *const CYRKeyboardButtonKeyPressedKey;
 @interface CYRKeyboardButton : UIControl
 
 /**
+ The identifier of the keyboard button. This determines the button data and configuration.
+ */
+@property (nonatomic) IBInspectable NSString *identifier;
+
+/**
  The style of the keyboard button. This determines the basic visual appearance of the keyboard.
  @discussion The style value is automatically determined during initialization but can be overriden.
  */
