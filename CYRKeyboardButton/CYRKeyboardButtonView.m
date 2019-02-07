@@ -517,7 +517,7 @@
                 {
                     CGRect firstRect = [self.inputOptionRects[0] CGRectValue];
                     
-                    path = (id)[UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, CGRectGetWidth(firstRect) * self.button.inputOptions.count + 12, CGRectGetHeight(firstRect) + 12)
+                    path = (id)[UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, CGRectGetWidth(firstRect) * self.button.inputOptions.count + 12, (CGRectGetHeight(firstRect) - self.heightReduction) + 12)
                                                           cornerRadius:6];
                     
                     offsetX = CGRectGetMaxX(keyRect) - CGRectGetWidth(path.bounds);
@@ -561,7 +561,8 @@
             
         case CYRKeyboardButtonStyleTablet:
             spacing = 0;
-            optionRect = CGRectOffset(CGRectInset(keyRect, 6, 6), 0, -(CGRectGetHeight(keyRect) + 3));
+            optionRect = CGRectOffset(CGRectInset(keyRect, 6, 6), 0, -((CGRectGetHeight(keyRect) - self.heightReduction) + 3));
+            optionRect.size.height -= self.heightReduction;
             offset = CGRectGetWidth(optionRect);
             break;
             
