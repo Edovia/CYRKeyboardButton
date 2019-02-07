@@ -64,7 +64,7 @@
         _type = type;
         _selectedInputIndex = 0;
         
-        self.heightReduction = 10.f;
+        self.heightReduction = 0.f;
         self.backgroundColor = [UIColor clearColor];
         self.userInteractionEnabled = NO;
         
