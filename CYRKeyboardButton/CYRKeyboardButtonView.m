@@ -296,7 +296,9 @@
         NSAttributedString *attributedString = [[NSAttributedString alloc]
                                                 initWithString:optionString
                                                 attributes:
-                                                @{NSFontAttributeName : self.button.inputOptionsFont, NSForegroundColorAttributeName : stringColor, NSParagraphStyleAttributeName : p}];
+                                                @{NSFontAttributeName : self.button.inputOptionsFont,
+                                                  NSForegroundColorAttributeName : stringColor,
+                                                  NSParagraphStyleAttributeName : p}];
         [attributedString drawInRect:stringRect];
     }];
     
@@ -517,7 +519,7 @@
                 {
                     CGRect firstRect = [self.inputOptionRects[0] CGRectValue];
                     
-                    path = (id)[UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, CGRectGetWidth(firstRect) * self.button.inputOptions.count + 12, (CGRectGetHeight(firstRect) - self.heightReduction) + 12)
+                    path = (id)[UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, CGRectGetWidth(firstRect) * self.button.inputOptions.count + 12, CGRectGetHeight(firstRect) + 12)
                                                           cornerRadius:6];
                     
                     offsetX = CGRectGetMaxX(keyRect) - CGRectGetWidth(path.bounds);
