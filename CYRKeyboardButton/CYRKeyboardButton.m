@@ -393,8 +393,6 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 
 - (void)handleTouchDown
 {
-    [[UIDevice currentDevice] playInputClick];
-    
     [self showInputView];
 }
 
