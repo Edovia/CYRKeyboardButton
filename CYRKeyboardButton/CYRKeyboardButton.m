@@ -39,6 +39,8 @@ NSString *const CYRKeyboardButtonDidShowExpandedInputNotification = @"CYRKeyboar
 NSString *const CYRKeyboardButtonDidHideExpandedInputNotification = @"CYRKeyboardButtonDidHideExpandedInputNotification";
 NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKey";
 
+#define kMinimumInputViewShowingTime 0.1f
+
 @interface CYRKeyboardButton () <UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) UILabel *inputLabel;
@@ -46,6 +48,8 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 @property (nonatomic, strong) CYRKeyboardButtonView *expandedButtonView;
 
 @property (nonatomic, assign) CYRKeyboardButtonPosition position;
+
+@property (nonatomic, assign) NSTimeInterval lastTouchDown;
 
 // Input options state
 @property (nonatomic, strong) UILongPressGestureRecognizer *optionsViewRecognizer;
@@ -238,6 +242,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
         
         [self.window addSubview:self.buttonView];
     } else {
+        self.highlighted = YES;
         [self setNeedsDisplay];
     }
     
@@ -267,6 +272,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 
 - (void)hideInputView
 {
+    self.highlighted = NO;
     [self.buttonView removeFromSuperview];
     self.buttonView = nil;
     
@@ -396,6 +402,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 
 - (void)handleTouchDown
 {
+    self.lastTouchDown = [[NSDate date] timeIntervalSince1970];
     [self showInputView];
 }
 
@@ -403,8 +410,20 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 {
     [self insertText:self.input];
     
-    [self hideInputView];
-    [self hideExpandedInputView];
+    NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
+    float delay = kMinimumInputViewShowingTime;
+    
+    if (now - self.lastTouchDown > delay) {
+        delay = 0.f;
+    }
+    else {
+        self.highlighted = YES;
+    }
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self hideInputView];
+        [self hideExpandedInputView];
+    });
 }
 
 - (void)_handlePanning:(UIPanGestureRecognizer *)recognizer
@@ -429,7 +448,19 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 {
     [super touchesEnded:touches withEvent:event];
     
-    [self hideInputView];
+    NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
+    float delay = kMinimumInputViewShowingTime;
+    
+    if (now - self.lastTouchDown > delay) {
+        delay = 0.f;
+    }
+    else {
+        self.highlighted = YES;
+    }
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self hideInputView];
+    });
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
