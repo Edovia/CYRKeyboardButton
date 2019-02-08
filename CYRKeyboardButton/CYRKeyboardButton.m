@@ -39,7 +39,7 @@ NSString *const CYRKeyboardButtonDidShowExpandedInputNotification = @"CYRKeyboar
 NSString *const CYRKeyboardButtonDidHideExpandedInputNotification = @"CYRKeyboardButtonDidHideExpandedInputNotification";
 NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKey";
 
-#define kMinimumInputViewShowingTime 0.1f
+#define kMinimumInputViewShowingTime 0.15f
 
 @interface CYRKeyboardButton () <UIGestureRecognizerDelegate>
 
