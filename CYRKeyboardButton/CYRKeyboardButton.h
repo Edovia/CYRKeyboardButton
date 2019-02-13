@@ -76,11 +76,6 @@ extern NSString *const CYRKeyboardButtonKeyPressedKey;
 @interface CYRKeyboardButton : UIControl
 
 /**
- The identifier of the keyboard button. This determines the button data and configuration.
- */
-@property (nonatomic) IBInspectable NSString *identifier;
-
-/**
  The height reduction to calculate the callout size. This is necessary in order for the callout to fit in a custom keyboard extension.
  */
 @property (nonatomic, assign) CGFloat calloutHeightReduction;
