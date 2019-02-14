@@ -274,7 +274,7 @@
     
     [inputOptions enumerateObjectsUsingBlock:^(NSString *optionString, NSUInteger idx, BOOL *stop) {
         CGRect optionRect = [self.inputOptionRects[idx] CGRectValue];
-        NSLog(@"%@", NSStringFromCGRect(optionRect));
+        
         BOOL selected = (idx == self.selectedInputIndex);
         
         if (selected) {
