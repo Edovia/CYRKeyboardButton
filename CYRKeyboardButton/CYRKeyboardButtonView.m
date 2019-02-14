@@ -188,13 +188,19 @@
         
         CGRect stringRect = bezierPath.bounds;
         
+        if (self.button.inputOptions.count > 0 && self.button.font.pointSize < 22.f) {
+            stringRect.origin.y += self.button.font.pointSize;
+        }
+        
         NSMutableParagraphStyle *p = [NSMutableParagraphStyle new];
         p.alignment = NSTextAlignmentCenter;
+        
+        UIFont* font = [UIFont fontWithName:self.button.font.fontName size:self.button.font.pointSize * 2];
         
         NSAttributedString *attributedString = [[NSAttributedString alloc]
                                                 initWithString:inputString
                                                 attributes:
-                                                @{NSFontAttributeName : [UIFont fontWithName:@"HelveticaNeue-Light" size:44], NSForegroundColorAttributeName : stringColor, NSParagraphStyleAttributeName : p}];
+                                                @{NSFontAttributeName : font, NSForegroundColorAttributeName : stringColor, NSParagraphStyleAttributeName : p}];
         [attributedString drawInRect:stringRect];
     }
 }
@@ -212,7 +218,7 @@
     // Overlay path & shadow
     {
         CGFloat shadowAlpha = 0;
-        CGSize shadowOffset;
+        CGSize shadowOffset = CGSizeZero;
         
         switch ([UIDevice currentDevice].userInterfaceIdiom) {
             case UIUserInterfaceIdiomPhone:
