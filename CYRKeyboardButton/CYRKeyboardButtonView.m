@@ -65,6 +65,7 @@
         _selectedInputIndex = 0;
         
         self.heightReduction = 0.f;
+        self.useNarrowerOptionWidth = NO;
         self.backgroundColor = [UIColor clearColor];
         self.userInteractionEnabled = NO;
         
@@ -273,7 +274,7 @@
     
     [inputOptions enumerateObjectsUsingBlock:^(NSString *optionString, NSUInteger idx, BOOL *stop) {
         CGRect optionRect = [self.inputOptionRects[idx] CGRectValue];
-        
+        NSLog(@"%@", NSStringFromCGRect(optionRect));
         BOOL selected = (idx == self.selectedInputIndex);
         
         if (selected) {
@@ -546,6 +547,9 @@
 {
     CGRect keyRect = [self convertRect:self.button.frame fromView:self.button.superview];
     
+    if (self.useNarrowerOptionWidth) {
+        keyRect.size.width /= 2;
+    }
     __block NSMutableArray *inputOptionRects = [NSMutableArray arrayWithCapacity:self.button.inputOptions.count];
     
     CGFloat offset = 0;
