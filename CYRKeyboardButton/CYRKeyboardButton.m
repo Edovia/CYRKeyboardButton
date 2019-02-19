@@ -39,7 +39,7 @@ NSString *const CYRKeyboardButtonDidShowExpandedInputNotification = @"CYRKeyboar
 NSString *const CYRKeyboardButtonDidHideExpandedInputNotification = @"CYRKeyboardButtonDidHideExpandedInputNotification";
 NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKey";
 
-#define kMinimumInputViewShowingTime 0.15f
+#define kMinimumInputViewShowingTime 0.125f
 
 @interface CYRKeyboardButton () <UIGestureRecognizerDelegate>
 
@@ -246,6 +246,8 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 
 - (void)showInputView
 {
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(hideInputAndExpandedViews) object:nil];
+    
     if (_style == CYRKeyboardButtonStylePhone) {
         [self hideInputView];
         
@@ -262,6 +264,8 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 
 - (void)showExpandedInputView:(UILongPressGestureRecognizer *)recognizer
 {
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(hideInputAndExpandedViews) object:nil];
+    
     if (recognizer.state == UIGestureRecognizerStateBegan) {
         if (self.expandedButtonView == nil) {
             CYRKeyboardButtonView *expandedButtonView = [[CYRKeyboardButtonView alloc] initWithKeyboardButton:self type:CYRKeyboardButtonViewTypeExpanded];
@@ -433,10 +437,15 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
         self.highlighted = YES;
     }
 
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self hideInputView];
-        [self hideExpandedInputView];
-    });
+    [self performSelector:@selector(hideInputAndExpandedViews) withObject:nil afterDelay:delay];
+}
+
+- (void)hideInputAndExpandedViews
+{
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(hideInputAndExpandedViews) object:nil];
+    
+    [self hideInputView];
+    [self hideExpandedInputView];
 }
 
 - (void)_handlePanning:(UIPanGestureRecognizer *)recognizer
