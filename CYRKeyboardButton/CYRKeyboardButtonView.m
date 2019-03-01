@@ -289,6 +289,10 @@
         
         if (selected) {
             // Draw selection background
+            if (self.button.style == CYRKeyboardButtonStylePhone) {
+                optionRect.origin.y += self.heightReduction / 2;
+                optionRect.size.height -= self.heightReduction;
+            }
             UIBezierPath *roundedRectanglePath = [UIBezierPath bezierPathWithRoundedRect:optionRect cornerRadius:4];
             
             [self.tintColor setFill];
