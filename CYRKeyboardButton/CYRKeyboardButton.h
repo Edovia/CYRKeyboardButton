@@ -141,6 +141,11 @@ extern NSString *const CYRKeyboardButtonKeyPressedKey;
 @property (nonatomic, strong) NSString *input;
 
 /**
+ The alternate string input for the keyboard button. This is the string that would be inserted upon a successful pan down gesture.
+ */
+@property (nonatomic, strong, nullable) NSString *alternateInput;
+
+/**
  The string input for the keyboard button. This is the string that would be inserted upon a successful key press. Use this method if you want a different text to show on the button than the input.
  */
 - (void)setInput:(NSString*)input withText:(NSString*)text;

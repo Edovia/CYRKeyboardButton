@@ -48,6 +48,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 @property (nonatomic, strong) CYRKeyboardButtonView *expandedButtonView;
 
 @property (nonatomic, assign) CYRKeyboardButtonPosition position;
+@property (nonatomic, assign) BOOL useAlternateInput;
 
 @property (nonatomic, assign) NSTimeInterval lastTouchDown;
 
@@ -105,6 +106,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     _keyTextColor = [UIColor blackColor];
     _keyShadowColor = [UIColor colorWithRed:136 / 255.f green:138 / 255.f blue:142 / 255.f alpha:1];
     _keyHighlightedColor = [UIColor colorWithRed:213/255.f green:214/255.f blue:216/255.f alpha:1];
+    _useAlternateInput = NO;
     
     self.trackingMarginInset = 0.f;
     
@@ -152,6 +154,14 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     return CGRectContainsPoint(area, point);
 }
 
+- (void)setAlternateInput:(NSString *)alternateInput {
+    [self willChangeValueForKey:NSStringFromSelector(@selector(alternateInput))];
+    _alternateInput = alternateInput;
+    [self didChangeValueForKey:NSStringFromSelector(@selector(alternateInput))];
+    
+    [self setupInputOptionsConfiguration];
+}
+
 #pragma mark - UIGestureRecognizerDelegate
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
@@ -195,11 +205,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     _inputOptions = inputOptions;
     [self didChangeValueForKey:NSStringFromSelector(@selector(inputOptions))];
     
-    if (_inputOptions.count > 0) {
-        [self setupInputOptionsConfiguration];
-    } else {
-        [self tearDownInputOptionsConfiguration];
-    }
+    [self setupInputOptionsConfiguration];
 }
 
 - (void)setStyle:(CYRKeyboardButtonStyle)style
@@ -395,18 +401,19 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 {
     [self tearDownInputOptionsConfiguration];
     
-    if (self.inputOptions.count > 0) {
-        UILongPressGestureRecognizer *longPressGestureRecognizer =
-        [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(showExpandedInputView:)];
-        longPressGestureRecognizer.minimumPressDuration = 0.3;
-        longPressGestureRecognizer.delegate = self;
-        
-        [self addGestureRecognizer:longPressGestureRecognizer];
-        self.optionsViewRecognizer = longPressGestureRecognizer;
-        
+    if (self.inputOptions.count > 0 || self.alternateInput != nil) {
+        if (self.inputOptions.count > 0) {
+            UILongPressGestureRecognizer *longPressGestureRecognizer =
+            [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(showExpandedInputView:)];
+            longPressGestureRecognizer.minimumPressDuration = 0.3;
+            longPressGestureRecognizer.delegate = self;
+            
+            [self addGestureRecognizer:longPressGestureRecognizer];
+            self.optionsViewRecognizer = longPressGestureRecognizer;
+        }
         UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(_handlePanning:)];
         panGestureRecognizer.delegate = self;
-        
+
         [self addGestureRecognizer:panGestureRecognizer];
         self.panGestureRecognizer = panGestureRecognizer;
     }
@@ -420,15 +427,8 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 
 #pragma mark - Touch Actions
 
-- (void)handleTouchDown
-{
-    self.lastTouchDown = [[NSDate date] timeIntervalSince1970];
-    [self showInputView];
-}
-
-- (void)handleTouchUpInside
-{
-    [self insertText:self.input];
+- (void)handleInput:(NSString*)input {
+    [self insertText:input];
     
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
     float delay = kMinimumInputViewShowingTime;
@@ -439,8 +439,19 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     else {
         self.highlighted = YES;
     }
-
+    
     [self performSelector:@selector(hideInputAndExpandedViews) withObject:nil afterDelay:delay];
+}
+
+- (void)handleTouchDown
+{
+    self.lastTouchDown = [[NSDate date] timeIntervalSince1970];
+    [self showInputView];
+}
+
+- (void)handleTouchUpInside
+{
+    [self handleInput:self.input];
 }
 
 - (void)hideInputAndExpandedViews
@@ -453,15 +464,34 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 
 - (void)_handlePanning:(UIPanGestureRecognizer *)recognizer
 {
+    NSLog(@"_handlePanning");
     if (recognizer.state == UIGestureRecognizerStateEnded || recognizer.state == UIGestureRecognizerStateCancelled) {
-        if (self.expandedButtonView.selectedInputIndex != NSNotFound) {
+        if (self.expandedButtonView && self.expandedButtonView.selectedInputIndex != NSNotFound) {
             NSString *inputOption = self.inputOptions[self.expandedButtonView.selectedInputIndex];
             
             [self insertText:inputOption];
         }
+        else if (self.alternateInput) {
+            [self handleInput:_useAlternateInput ? self.alternateInput : self.input];
+        }
         
         [self hideExpandedInputView];
     } else {
+        if (self.alternateInput) {
+            _useAlternateInput = NO;
+            
+            CGPoint velocity = [recognizer velocityInView:self];
+            
+            if(velocity.y > 0)
+            {
+                CGPoint location = [recognizer locationInView:self];
+                
+                if (location.y >= self.bounds.size.height) {
+                    _useAlternateInput = YES;
+                    NSLog(@"gesture went down %f in %f", velocity.y, [recognizer locationInView:self].y);
+                }
+            }
+        }
         CGPoint location = [recognizer locationInView:self.superview];
         [self.expandedButtonView updateSelectedInputIndexForPoint:location];
     };
