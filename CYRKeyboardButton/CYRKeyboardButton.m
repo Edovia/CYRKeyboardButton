@@ -464,7 +464,6 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 
 - (void)_handlePanning:(UIPanGestureRecognizer *)recognizer
 {
-    NSLog(@"_handlePanning");
     if (recognizer.state == UIGestureRecognizerStateEnded || recognizer.state == UIGestureRecognizerStateCancelled) {
         if (self.expandedButtonView && self.expandedButtonView.selectedInputIndex != NSNotFound) {
             NSString *inputOption = self.inputOptions[self.expandedButtonView.selectedInputIndex];
