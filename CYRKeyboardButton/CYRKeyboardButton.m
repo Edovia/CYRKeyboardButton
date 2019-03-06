@@ -51,6 +51,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 
 @property (nonatomic, assign) CYRKeyboardButtonPosition position;
 @property (nonatomic, assign) BOOL useAlternateInput;
+@property (nonatomic, assign) CGFloat alternateInputLabelAlpha;
 
 @property (nonatomic, assign) NSTimeInterval lastTouchDown;
 
@@ -110,6 +111,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     _keyShadowColor = [UIColor colorWithRed:136 / 255.f green:138 / 255.f blue:142 / 255.f alpha:1];
     _keyHighlightedColor = [UIColor colorWithRed:213/255.f green:214/255.f blue:216/255.f alpha:1];
     _useAlternateInput = NO;
+    _alternateInputLabelAlpha = 0.5f;
     
     self.trackingMarginInset = 0.f;
     
@@ -144,7 +146,8 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
         alternateInputLabel.textAlignment = NSTextAlignmentCenter;
         alternateInputLabel.backgroundColor = [UIColor clearColor];
         alternateInputLabel.userInteractionEnabled = NO;
-        alternateInputLabel.textColor = UIColor.lightGrayColor;
+        alternateInputLabel.textColor = _keyTextColor;
+        alternateInputLabel.alpha = _alternateInputLabelAlpha;
         alternateInputLabel.font = _alternateFont;
 
         _alternateInputLabel = alternateInputLabel;
@@ -519,22 +522,46 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
             [self handleInput:_useAlternateInput ? self.alternateInput : self.input];
         }
         
+        // Animate back the input labels back to their default states
+        [UIView animateWithDuration:0.25f animations:^{
+            self.alternateInputLabel.font = self.alternateFont;
+            self.alternateInputLabel.alpha = self.alternateInputLabelAlpha;
+            self.inputLabel.font = self.font;
+            self.inputLabel.alpha = 1.f;
+        }];
+        
         [self hideExpandedInputView];
     } else {
         if (self.alternateInput) {
             _useAlternateInput = NO;
             
             CGPoint velocity = [recognizer velocityInView:self];
+            UIFont* alternateInputFont;
+            UIFont* inputFont;
             
-            if(velocity.y > 0)
+            if (velocity.y > 0)
             {
+                alternateInputFont = [UIFont systemFontOfSize:MIN(_alternateInputLabel.font.pointSize + 1, _font.pointSize)];
+                inputFont = [UIFont systemFontOfSize:MAX(_inputLabel.font.pointSize - 1, 0)];
+                
                 CGPoint location = [recognizer locationInView:self];
                 
                 if (location.y >= self.bounds.size.height) {
                     _useAlternateInput = YES;
-                    NSLog(@"gesture went down %f in %f", velocity.y, [recognizer locationInView:self].y);
                 }
             }
+            else if (velocity.y < 0) {
+                alternateInputFont = [UIFont systemFontOfSize:MAX(_alternateInputLabel.font.pointSize - 1, _alternateFont.pointSize)];
+                inputFont = [UIFont systemFontOfSize:MIN(_inputLabel.font.pointSize + 1, _font.pointSize)];
+            }
+            
+            // Animate the input labels for the vertical swipe
+            [UIView animateWithDuration:0 animations:^{
+                self.alternateInputLabel.font = alternateInputFont;
+                self.alternateInputLabel.alpha = alternateInputFont.pointSize / self.font.pointSize;
+                self.inputLabel.font = inputFont;
+                self.inputLabel.alpha = inputFont.pointSize / self.font.pointSize;
+            }];
         }
         CGPoint location = [recognizer locationInView:self.superview];
         [self.expandedButtonView updateSelectedInputIndexForPoint:location];
