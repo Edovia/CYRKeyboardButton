@@ -157,6 +157,11 @@ extern NSString *const CYRKeyboardButtonKeyPressedKey;
 - (void)setInput:(NSString*)input withText:(NSString*)text;
 
 /**
+ Hides all text from the button.
+ */
+- (void)enableTrackpadMode:(BOOL)enable;
+
+/**
  An array of input option strings associated with the keybonard button. The user must tap and hold the keyboard button for 0.3 seconds before the input options will be displayed.
  @discussion Input options are automatically positioned based on the keyboard buttons position within its' superview.
  */

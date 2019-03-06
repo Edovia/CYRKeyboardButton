@@ -237,6 +237,11 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     [_inputLabel sizeToFit];
 }
 
+- (void)enableTrackpadMode:(BOOL)enable {
+    [_inputLabel setAlpha: enable ? 0 : 1.f];
+    [_alternateInputLabel setAlpha: enable ? 0 : 1.f];
+}
+
 - (void)setInputOptions:(NSArray *)inputOptions
 {
     [self willChangeValueForKey:NSStringFromSelector(@selector(inputOptions))];
