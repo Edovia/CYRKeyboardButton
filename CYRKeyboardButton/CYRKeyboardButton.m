@@ -43,6 +43,8 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 
 @interface CYRKeyboardButton () <UIGestureRecognizerDelegate>
 
+@property (nonatomic, strong) UIStackView* stackView;
+@property (nonatomic, strong) UILabel *alternateInputLabel;
 @property (nonatomic, strong) UILabel *inputLabel;
 @property (nonatomic, strong) CYRKeyboardButtonView *buttonView;
 @property (nonatomic, strong) CYRKeyboardButtonView *expandedButtonView;
@@ -100,6 +102,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     }
     
     // Default appearance
+    _alternateFont = [UIFont systemFontOfSize:13.f];
     _font = [UIFont systemFontOfSize:22.f];
     _inputOptionsFont = [UIFont systemFontOfSize:24.f];
     _keyColor = [UIColor whiteColor];
@@ -120,8 +123,36 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     [self addTarget:self action:@selector(handleTouchDown) forControlEvents:UIControlEventTouchDown];
     [self addTarget:self action:@selector(handleTouchUpInside) forControlEvents:UIControlEventTouchUpInside];
     
+    UIStackView* stackView = [[UIStackView alloc] initWithFrame:self.bounds];
+    stackView.axis = UILayoutConstraintAxisVertical;
+    stackView.distribution = UIStackViewDistributionEqualSpacing;
+    stackView.spacing = 0;
+    stackView.alignment = UIStackViewAlignmentCenter;
+    stackView.translatesAutoresizingMaskIntoConstraints = false;
+    stackView.userInteractionEnabled = NO;
+    
+    _stackView = stackView;
+    [self addSubview:_stackView];
+    
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:_stackView attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeCenterX multiplier:1.0 constant:0.0]];
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:_stackView attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeCenterY multiplier:1.0 constant:0.0]];
+    
+    if (_style == CYRKeyboardButtonStyleTablet) {
+        // Input label
+        UILabel *alternateInputLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+        alternateInputLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+        alternateInputLabel.textAlignment = NSTextAlignmentCenter;
+        alternateInputLabel.backgroundColor = [UIColor clearColor];
+        alternateInputLabel.userInteractionEnabled = NO;
+        alternateInputLabel.textColor = UIColor.lightGrayColor;
+        alternateInputLabel.font = _alternateFont;
+
+        _alternateInputLabel = alternateInputLabel;
+        [_stackView addArrangedSubview:_alternateInputLabel];
+    }
+    
     // Input label
-    UILabel *inputLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.frame), CGRectGetHeight(self.frame))];
+    UILabel *inputLabel = [[UILabel alloc] initWithFrame:self.bounds];
     inputLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
     inputLabel.textAlignment = NSTextAlignmentCenter;
     inputLabel.backgroundColor = [UIColor clearColor];
@@ -129,8 +160,8 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     inputLabel.textColor = _keyTextColor;
     inputLabel.font = _font;
     
-    [self addSubview:inputLabel];
     _inputLabel = inputLabel;
+    [_stackView addArrangedSubview:_inputLabel];
     
     [self updateDisplayStyle];
 }
@@ -152,14 +183,6 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event {
     CGRect area = CGRectInset(self.bounds, -self.trackingMarginInset, -self.trackingMarginInset);
     return CGRectContainsPoint(area, point);
-}
-
-- (void)setAlternateInput:(NSString *)alternateInput {
-    [self willChangeValueForKey:NSStringFromSelector(@selector(alternateInput))];
-    _alternateInput = alternateInput;
-    [self didChangeValueForKey:NSStringFromSelector(@selector(alternateInput))];
-    
-    [self setupInputOptionsConfiguration];
 }
 
 #pragma mark - UIGestureRecognizerDelegate
@@ -185,6 +208,16 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     return description;
 }
 
+- (void)setAlternateInput:(NSString *)alternateInput {
+    [self willChangeValueForKey:NSStringFromSelector(@selector(alternateInput))];
+    _alternateInput = alternateInput;
+    [self didChangeValueForKey:NSStringFromSelector(@selector(alternateInput))];
+    
+    _alternateInputLabel.text = alternateInput;
+    [_alternateInputLabel sizeToFit];
+    [self setupInputOptionsConfiguration];
+}
+
 - (void)setInput:(NSString *)input
 {
     [self willChangeValueForKey:NSStringFromSelector(@selector(input))];
@@ -192,6 +225,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     [self didChangeValueForKey:NSStringFromSelector(@selector(input))];
     
     _inputLabel.text = _input;
+    [_inputLabel sizeToFit];
 }
 
 - (void)setInput:(NSString*)input withText:(NSString*)text {
@@ -236,6 +270,17 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
         [self didChangeValueForKey:NSStringFromSelector(@selector(font))];
         
         _inputLabel.font = font;
+    }
+}
+
+- (void)setAlternateFont:(UIFont *)alternateFont
+{
+    if (_alternateFont != alternateFont) {
+        [self willChangeValueForKey:NSStringFromSelector(@selector(font))];
+        _alternateFont = alternateFont;
+        [self didChangeValueForKey:NSStringFromSelector(@selector(font))];
+        
+        _alternateInputLabel.font = _alternateFont;
     }
 }
 

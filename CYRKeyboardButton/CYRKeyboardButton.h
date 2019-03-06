@@ -95,6 +95,12 @@ extern NSString *const CYRKeyboardButtonKeyPressedKey;
 // Styling
 
 /**
+ The font associated with the keyboard button alternate input.
+ @discussion This font only affects the keyboard button's standard view.
+ */
+@property (nonatomic, strong) UIFont *alternateFont UI_APPEARANCE_SELECTOR;
+
+/**
  The font associated with the keyboard button.
  @discussion This font only affects the keyboard button's standard view.
  */
