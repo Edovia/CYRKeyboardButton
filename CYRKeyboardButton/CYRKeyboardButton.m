@@ -234,6 +234,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 - (void)setInput:(NSString*)input withText:(NSString*)text {
     self.input = input;
     _inputLabel.text = text;
+    [_inputLabel sizeToFit];
 }
 
 - (void)setInputOptions:(NSArray *)inputOptions
