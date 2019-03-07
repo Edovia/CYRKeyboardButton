@@ -111,7 +111,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     _keyShadowColor = [UIColor colorWithRed:136 / 255.f green:138 / 255.f blue:142 / 255.f alpha:1];
     _keyHighlightedColor = [UIColor colorWithRed:213/255.f green:214/255.f blue:216/255.f alpha:1];
     _useAlternateInput = NO;
-    _alternateInputLabelAlpha = 0.5f;
+    _alternateInputLabelAlpha = 0.4f;
     
     self.trackingMarginInset = 0.f;
     
@@ -238,8 +238,8 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
 }
 
 - (void)enableTrackpadMode:(BOOL)enable {
-    [_inputLabel setAlpha: enable ? 0 : 1.f];
-    [_alternateInputLabel setAlpha: enable ? 0 : 1.f];
+    _inputLabel.alpha = enable ? 0 : 1.f;
+    _alternateInputLabel.alpha = enable ? 0 : _alternateInputLabelAlpha;
 }
 
 - (void)setInputOptions:(NSArray *)inputOptions
@@ -268,6 +268,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
         [self didChangeValueForKey:NSStringFromSelector(@selector(keyTextColor))];
         
         _inputLabel.textColor = keyTextColor;
+        _alternateInputLabel.textColor = keyTextColor;
     }
 }
 
