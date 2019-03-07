@@ -111,7 +111,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
     _keyShadowColor = [UIColor colorWithRed:136 / 255.f green:138 / 255.f blue:142 / 255.f alpha:1];
     _keyHighlightedColor = [UIColor colorWithRed:213/255.f green:214/255.f blue:216/255.f alpha:1];
     _useAlternateInput = NO;
-    _alternateInputLabelAlpha = 0.4f;
+    _alternateInputLabelAlpha = 0.2f;
     
     self.trackingMarginInset = 0.f;
     
