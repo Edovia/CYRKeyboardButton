@@ -460,7 +460,7 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
         if (self.inputOptions.count > 0) {
             UILongPressGestureRecognizer *longPressGestureRecognizer =
             [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(showExpandedInputView:)];
-            longPressGestureRecognizer.minimumPressDuration = 0.3;
+            longPressGestureRecognizer.minimumPressDuration = _style == CYRKeyboardButtonStyleTablet ? 0.5 : 0.3;
             longPressGestureRecognizer.delegate = self;
             
             [self addGestureRecognizer:longPressGestureRecognizer];
@@ -539,39 +539,65 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
         
         [self hideExpandedInputView];
     } else {
+        BOOL updateExpandedView = YES;
+        
         if (self.alternateInput) {
+            BOOL locationInOptions = CGRectContainsPoint(self.expandedButtonView.bounds, [recognizer locationInView:self.expandedButtonView]);
             _useAlternateInput = NO;
             
+            // Default values
             CGPoint velocity = [recognizer velocityInView:self];
-            UIFont* alternateInputFont;
-            UIFont* inputFont;
+            UIFont* alternateInputFont = _alternateFont;
+            UIFont* inputFont = _font;
+            CGFloat alternateInputAlpha = _alternateInputLabelAlpha;
+            CGFloat inputAlpha = 1.f;
             
             if (velocity.y > 0)
             {
-                alternateInputFont = [UIFont systemFontOfSize:MIN(_alternateInputLabel.font.pointSize + 1, _font.pointSize)];
-                inputFont = [UIFont systemFontOfSize:MAX(_inputLabel.font.pointSize - 1, 0)];
+                updateExpandedView = locationInOptions;
                 
-                CGPoint location = [recognizer locationInView:self];
-                
-                if (location.y >= self.bounds.size.height) {
-                    _useAlternateInput = YES;
+                if (!locationInOptions) {
+                    alternateInputFont = [UIFont systemFontOfSize:MIN(_alternateInputLabel.font.pointSize + 1.5, _font.pointSize)];
+                    inputFont = [UIFont systemFontOfSize:MAX(_inputLabel.font.pointSize - 1.5, 0)];
+                    
+                    alternateInputAlpha = alternateInputFont.pointSize / self.font.pointSize;
+                    inputAlpha = inputFont.pointSize / self.font.pointSize;
+                    
+                    CGPoint location = [recognizer locationInView:self];
+                    
+                    if (location.y >= self.bounds.size.height) {
+                        _useAlternateInput = YES;
+                    }
+                    [self setHighlighted:YES];
                 }
             }
             else if (velocity.y < 0) {
-                alternateInputFont = [UIFont systemFontOfSize:MAX(_alternateInputLabel.font.pointSize - 1, _alternateFont.pointSize)];
-                inputFont = [UIFont systemFontOfSize:MIN(_inputLabel.font.pointSize + 1, _font.pointSize)];
+                if (!locationInOptions) {
+                    alternateInputFont = [UIFont systemFontOfSize:MAX(_alternateInputLabel.font.pointSize - 1.5, _alternateFont.pointSize)];
+                    inputFont = [UIFont systemFontOfSize:MIN(_inputLabel.font.pointSize + 1.5, _font.pointSize)];
+                    
+                    alternateInputAlpha = alternateInputFont.pointSize / self.font.pointSize;
+                    inputAlpha = inputFont.pointSize / self.font.pointSize;
+                    [self setHighlighted:YES];
+                }
             }
             
             // Animate the input labels for the vertical swipe
             [UIView animateWithDuration:0 animations:^{
                 self.alternateInputLabel.font = alternateInputFont;
-                self.alternateInputLabel.alpha = alternateInputFont.pointSize / self.font.pointSize;
+                self.alternateInputLabel.alpha = alternateInputAlpha;
                 self.inputLabel.font = inputFont;
-                self.inputLabel.alpha = inputFont.pointSize / self.font.pointSize;
+                self.inputLabel.alpha = inputAlpha;
             }];
         }
-        CGPoint location = [recognizer locationInView:self.superview];
-        [self.expandedButtonView updateSelectedInputIndexForPoint:location];
+        
+        if (updateExpandedView) {
+            CGPoint location = [recognizer locationInView:self.superview];
+            [self.expandedButtonView updateSelectedInputIndexForPoint:location];
+        }
+        else {
+            [self hideExpandedInputView];
+        }
     };
 }
 
