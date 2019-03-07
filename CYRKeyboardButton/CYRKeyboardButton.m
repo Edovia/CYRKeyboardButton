@@ -528,6 +528,9 @@ NSString *const CYRKeyboardButtonKeyPressedKey = @"CYRKeyboardButtonKeyPressedKe
         else if (self.alternateInput) {
             [self handleInput:_useAlternateInput ? self.alternateInput : self.input];
         }
+        else if (!self.expandedButtonView.selectedInputIndex || self.expandedButtonView.selectedInputIndex == NSNotFound) {
+            [self handleInput:self.input];
+        }
         
         // Animate back the input labels back to their default states
         [UIView animateWithDuration:0.25f animations:^{
